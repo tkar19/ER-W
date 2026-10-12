@@ -35,7 +35,7 @@ On Android, open the URL in Chrome, test a new campaign and select **Add to Home
 
 ## Release provenance
 
-- Source: private `tkar19/Eternal-Realms`, main commit `9eec5d6a51b2f691fb400ca26ca9f6c1609efc55`.
+- Source: private `tkar19/Eternal-Realms`, main commit `0e30ab801195cbd2df0ebf48157533feee385509`.
 - Browser-safe application assembled from `game/public/` and the allowlisted `game/src/` modules from that exact commit.
 - This public release is assembled from the current source module allowlist, not the sometimes-stale checked-in `game/www/` directory.
 - No Node server code, API secrets, training datasets, or private project planning documents are published.
@@ -46,3 +46,7 @@ On Android, open the URL in Chrome, test a new campaign and select **Add to Home
 ## Mobile smoke test
 
 The public workflow also runs a headless Chromium test at a narrow Android-sized viewport: free-form character creation, Review, commit, first action, save and reload. The workflow is a browser approximation, not a physical-device guarantee. See [GitHub Actions](https://github.com/tkar19/ER-W/actions).
+
+## Full gameplay audit
+
+The private source now contains `game/test/full_gameplay_audit.test.mjs` (16 domain-level checks), and this public repository contains an Android-size multi-action Playwright audit. This release fixes first-person LOOK commands and punctuation/case matching for *existing* travel destinations. Audit traces are retained in GitHub Actions artifacts; device testing remains distinct from CI emulation.

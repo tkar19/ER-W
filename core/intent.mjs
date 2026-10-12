@@ -16,7 +16,7 @@ export const INTENT_SCHEMA = {
 export function localIntent(text, context={}) {
   const s=String(text||'').trim(); const l=s.toLowerCase();
   let action_type='OTHER';
-  if (/^(look|observe|survey|scan)\b/.test(l)) action_type='LOOK';
+  if (/^(?:i\s+)?(?:look|observe|survey|scan)\b|^(?:i\s+)?(?:have|take)\s+a\s+look\b/.test(l)) action_type='LOOK';
   else if (/(investigate|inspect|search|examine|study)\b/.test(l)) action_type='INVESTIGATE';
   else if (/(talk|speak|ask|tell|persuade|convince|deceive|lie|intimidate|negotiate|bargain)\b/.test(l)) action_type='TALK';
   else if (/(travel|walk|ride|go |head |move |journey|leave for)\b/.test(l)) action_type='TRAVEL';
@@ -35,7 +35,7 @@ export function localIntent(text, context={}) {
   let target=null;
   if(action_type==='TRAVEL'){
     const m=s.match(/(?:to|toward|towards|into|through)\s+(.+)$/i);
-    target=m?m[1].trim().slice(0,120):(/south|north|east|west/i.exec(s)?.[0]??null);
+    target=m?m[1].trim().replace(/[.!?,;:]+$/,'').trim().slice(0,120):(/south|north|east|west/i.exec(s)?.[0]??null);
   }
   const duration_minutes=parseDurationMinutes(s,context?.state?.world?.calendar);
   let distance_km=null; const dm=s.match(/(\d+(?:\.\d+)?)\s*(?:km|kilomet(?:er|re)s?)\b/i); if(dm) distance_km=Number(dm[1]);

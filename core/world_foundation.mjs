@@ -103,7 +103,7 @@ export function currentLocationLabel(state){return currentLocation(state)?.label
 export function resolveLocationId(state,value,{createLegacy=false}={}){
   if(typeof value!=='string'||!value.trim())return null;
   if(state.world.locations?.[value])return value;
-  const found=Object.values(state.world.locations||{}).find(x=>x.label===value);
+  const found=Object.values(state.world.locations||{}).find(x=>x.label===value.trim()) || Object.values(state.world.locations||{}).find(x=>x.label.toLowerCase()===value.trim().toLowerCase());
   if(found)return found.location_id;
   if(!createLegacy)return null;
   const entity=createLocationEntity(state.meta.campaign_id,value);state.world.locations[entity.location_id]=entity;return entity.location_id;
