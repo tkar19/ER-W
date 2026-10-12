@@ -35,7 +35,7 @@ On Android, open the URL in Chrome, test a new campaign and select **Add to Home
 
 ## Release provenance
 
-- Source: private `tkar19/Eternal-Realms`, main commit `22751e2a1c3c08f5277c5d7aff8fdb36bd08daef`.
+- Source: private `tkar19/Eternal-Realms`, main commit `fab32ed03fdb763ae600154baa6df48b6644e4ce`.
 - Browser-safe application assembled from `game/public/` and the allowlisted `game/src/` modules from that exact commit.
 - This public release is assembled from the current source module allowlist, not the sometimes-stale checked-in `game/www/` directory.
 - No Node server code, API secrets, training datasets, or private project planning documents are published.
@@ -54,3 +54,5 @@ The private source now contains `game/test/full_gameplay_audit.test.mjs` (16 dom
 ### Conversation ledger hotfix
 
 The full-playthrough audit exposed a real IndexedDB ordering defect after consecutive questions. This release sorts stored conversations by canonical sequence and uses absolute sequence numbers when the recent-context window exceeds 50 entries. This is a storage repair; it does not alter canonical world events.
+
+The 2026-10-12 gameplay audit also repaired player-visible projection of scheduled local situation changes and short local travel, which previously failed post-commit because the event types were not in the presentation allowlist.
