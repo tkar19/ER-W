@@ -1,0 +1,38 @@
+name: Full Gameplay Audit — Mobile Browser
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'core/**'
+      - 'app.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'sw.js'
+      - 'scripts/full-gameplay-audit.mjs'
+      - '.github/workflows/full-gameplay-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  playthrough:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run verify
+      - name: Install headless browser in CI
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install chromium
+      - name: Exercise multi-action Android-size playthrough, save, and navigation
+        run: node scripts/full-gameplay-audit.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-gameplay-audit-evidence
+          path: screenshots/
+          if-no-files-found: ignore
+          retention-days: 14
