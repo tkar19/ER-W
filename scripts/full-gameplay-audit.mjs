@@ -69,7 +69,7 @@ try{
     const before=await gen(),locationBefore=await page.locator('#locationText').innerText();
     await page.locator('#actionInput').fill(text);
     await page.locator('#commitBtn').click();
-    await page.waitForFunction(()=>{const a=document.querySelector('#actionInput'),b=document.querySelector('#commitBtn');return a&&b&&!b.disabled&&a.value==='';},null,{timeout:90000});
+    try{await page.waitForFunction(()=>{const a=document.querySelector('#actionInput'),b=document.querySelector('#commitBtn');return a&&b&&!b.disabled&&a.value==='';},null,{timeout:20000})}catch(error){const message=await page.locator('#toast').innerText();await page.screenshot({path:'screenshots/audit-error.png',fullPage:true});throw Error('Action failed: '+text+' | UI: '+message+' | '+error.message)}
     const after=await gen(),locationAfter=await page.locator('#locationText').innerText();
     if(expectCommit?after!==before+1:after!==before)throw Error('Unexpected generation after "'+text+'": '+before+' -> '+after);
     const entry=(await page.locator('#chronicle .entry').last().innerText()).slice(-400);
