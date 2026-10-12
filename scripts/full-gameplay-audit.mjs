@@ -100,7 +100,7 @@ try{
   const download=await downloadEvent,savePath='screenshots/audit-save.ergpt.json';
   await download.saveAs(savePath);
   const save=JSON.parse(await readFile(savePath,'utf8'));
-  if(!save.head||!save.generations||!save.campaign_id)throw Error('Export is missing canonical ancestry');
+  if(!save.head||!save.generations||!save.head.campaign_id)throw Error('Export is missing canonical ancestry');
   if(save.head.generation!==currentGen)throw Error('Export generation inconsistent with game');
   await page.locator('[data-view-target="chronicle"]').click();
   await page.setViewportSize({width:320,height:700});
@@ -112,7 +112,7 @@ try{
   await page.locator('#gamePanel').waitFor({state:'visible',timeout:90000});
   if(await gen()!==currentGen)throw Error('Audit playthrough was not restored after reload');
   report.push({text:'Export and browser reload',before:currentGen,after:await gen(),locationAfter:await page.locator('#locationText').innerText()});
-  await writeFile('screenshots/audit-playthrough.json',JSON.stringify({testedAt:new Date().toISOString(),campaignId:save.campaign_id,generation:await gen(),actions:report,narrowViewport:size,publicBundle:'ER-W'},null,2));
+  await writeFile('screenshots/audit-playthrough.json',JSON.stringify({testedAt:new Date().toISOString(),campaignId:save.head.campaign_id,generation:await gen(),actions:report,narrowViewport:size,publicBundle:'ER-W'},null,2));
   console.log('AUDIT COMPLETE: '+report.length+' recorded gameplay checks, generation '+(await gen())+', exported ancestry and mobile navigation.');
 
   if(errors.length)throw Error('Browser script errors: '+errors.join(' | '));
