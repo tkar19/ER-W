@@ -35,7 +35,7 @@ On Android, open the URL in Chrome, test a new campaign and select **Add to Home
 
 ## Release provenance
 
-- Source: private `tkar19/Eternal-Realms`, main commit `fab32ed03fdb763ae600154baa6df48b6644e4ce`.
+- Source: private `tkar19/Eternal-Realms`, main commit `59e32b2af9de3572095063b505a1e541bf599740` (latest DM language routing update).
 - Browser-safe application assembled from `game/public/` and the allowlisted `game/src/` modules from that exact commit.
 - This public release is assembled from the current source module allowlist, not the sometimes-stale checked-in `game/www/` directory.
 - No Node server code, API secrets, training datasets, or private project planning documents are published.

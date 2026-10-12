@@ -14,11 +14,11 @@ export const INTENT_SCHEMA = {
 };
 
 export function localIntent(text, context={}) {
-  const s=String(text||'').trim(); const l=s.toLowerCase();
+  const s=String(text||'').trim(); const l=s.replace(/["“][^"”]*["”]/g,' ').toLowerCase();
   let action_type='OTHER';
   if (/^(?:i\s+)?(?:look|observe|survey|scan)\b|^(?:i\s+)?(?:have|take)\s+a\s+look\b/.test(l)) action_type='LOOK';
   else if (/(investigate|inspect|search|examine|study)\b/.test(l)) action_type='INVESTIGATE';
-  else if (/(talk|speak|ask|tell|persuade|convince|deceive|lie|intimidate|negotiate|bargain)\b/.test(l)) action_type='TALK';
+  else if (/(talk|speak|ask|tell|say|greet|reply|answer|persuade|convince|deceive|lie|intimidate|negotiate|bargain)\b/.test(l)) action_type='TALK';
   else if (/(travel|walk|ride|go |head |move |journey|leave for)\b/.test(l)) action_type='TRAVEL';
   else if (/(cast|spell|magic|enchant|conjure|summon)\b/.test(l)) action_type='MAGIC';
   else if (/(wait|pass time)\b/.test(l)) action_type='WAIT';
@@ -42,8 +42,8 @@ export function localIntent(text, context={}) {
   let method=null;
   if(action_type==='INVESTIGATE') method=/arcane|magic/i.test(s)?'arcane_analysis':/question|interview/i.test(s)?'interview':'search';
   if(action_type==='TALK'){
-    if(/intimidat|threat/i.test(s)) defaults[0]='Intimidation';
-    else if(/deceiv|lie|bluff/i.test(s)) defaults[0]='Deception';
+    if(/intimidat|threat/i.test(l)) defaults[0]='Intimidation';
+    else if(/deceiv|lie|bluff/i.test(l)) defaults[0]='Deception';
   }
   if(action_type==='COMBAT' && /shoot|bow|arrow|throw|ranged/i.test(s)) defaults[0]='Ranged';
   return {action_type,summary:s.slice(0,300),target,duration_minutes,distance_km,skill:defaults[0],attribute:defaults[1],difficulty:defaults[2],method,is_pc_voluntary:true};

@@ -1,7 +1,7 @@
 import { createInitialState, debugState, publicState, resolveTurn } from './engine.mjs';
 import { reviewCreation, resolveGenesis } from './genesis.mjs';
 import { localIntent } from './intent.mjs';
-import { authorizeIntent, routeInteraction } from './interaction_router.mjs';
+import { authorizeIntent, routeInteraction, actionTextForInteraction } from './interaction_router.mjs';
 import { createConversationEntry } from './conversation_ledger.mjs';
 import { createLocalDmAdapter } from './local_dm_adapter.mjs';
 import { invokeLocalAiV09 } from './local_ai_v09_bridge.mjs';
@@ -92,7 +92,7 @@ export function createBrowserLocalRuntime({store=defaultStore,storeOptions={},lo
     if(store.saveLocalInteractionPhase)await store.saveLocalInteractionPhase(campaignId,receivedPhase,storeOptions);
     await lifecycleHook?.('received_uncommitted',clone(receivedPhase));
     if(interaction.interaction_mode!=='world_action')return converse(campaignId,input,expectedGeneration,{current,recent,interaction,head});
-    const intent=localIntent(input,{state:publicState(current.state)}),authorised=authorizeIntent(interaction,intent),result=resolveTurn(current.state,intent,input);
+    const intent=localIntent(actionTextForInteraction(input),{state:publicState(current.state)}),authorised=authorizeIntent(interaction,intent),result=resolveTurn(current.state,intent,input);
     let committed;
     try{committed=await store.commitLocalGeneration(campaignId,expectedGeneration,result.state,result.events,{...storeOptions,interaction_phase:receivedPhase});}
     catch(error){if(store.clearLocalInteractionPhase)await store.clearLocalInteractionPhase(campaignId,interaction.interaction_id,storeOptions);if(error.code==='STALE_WRITER')throw httpError(error.message,409,{error:'stale_writer'});throw error;}
