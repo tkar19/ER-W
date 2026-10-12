@@ -1,0 +1,31 @@
+name: Mobile browser playtest
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify static build and imports
+        run: npm run verify
+      - name: Install Chromium smoke runner (CI only)
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install chromium
+      - name: Simulate Android-sized creation and gameplay
+        run: node scripts/mobile-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-smoke-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
+          retention-days: 7

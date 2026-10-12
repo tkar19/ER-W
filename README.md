@@ -1,6 +1,6 @@
 # Eternal Realms — Public Web Playtest
 
-**Status:** early playable browser/PWA test release, not a finished RPG or trained generative local DM.
+**Status:** early browser/PWA playtest — mobile storybook update, not a finished RPG or trained generative local DM.
 
 **Play URL (after GitHub Pages is enabled):** https://tkar19.github.io/ER-W/
 
@@ -8,9 +8,11 @@ This repository publishes only the **browser-safe release** of Eternal Realms fr
 
 ## What works
 
-- Browser-local world simulation and character creation.
+- Browser-local world simulation and character creation with in-form errors, a readable review and saved drafts.
 - IndexedDB campaign storage, turn history, export/import and recovery support.
 - Rule-based local narration, without an API key, account or paid service.
+- Landscape scene, manuscript chronicle, compact touch action choices and mobile navigation.
+- Free-form player history retained even when exact mechanics cannot be inferred.
 - An installable Progressive Web App (PWA) on supported Android browsers.
 - Manual **ChatGPT handoff**, which copies a player-safe snapshot and opens ChatGPT.
 
@@ -33,10 +35,14 @@ On Android, open the URL in Chrome, test a new campaign and select **Add to Home
 
 ## Release provenance
 
-- Source: private `tkar19/Eternal-Realms`, main commit `127a83ff69e55f4253a648a4e115e63eab448113`.
+- Source: private `tkar19/Eternal-Realms`, main commit `9eec5d6a51b2f691fb400ca26ca9f6c1609efc55`.
 - Browser-safe application assembled from `game/public/` and the allowlisted `game/src/` modules from that exact commit.
-- This recreates the `build:web` transformation and includes the four latest source modules absent from the previously checked-in `game/www/` output.
+- This public release is assembled from the current source module allowlist, not the sometimes-stale checked-in `game/www/` directory.
 - No Node server code, API secrets, training datasets, or private project planning documents are published.
 - The authoritative project remains the private Eternal Realms repository. Updates to this public repository are separate releases.
 
 © Project owner. No public software reuse license has been granted by this repository.
+
+## Mobile smoke test
+
+The public workflow also runs a headless Chromium test at a narrow Android-sized viewport: free-form character creation, Review, commit, first action, save and reload. The workflow is a browser approximation, not a physical-device guarantee. See [GitHub Actions](https://github.com/tkar19/ER-W/actions).

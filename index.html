@@ -35,15 +35,27 @@
 
     <main>
       <section id="welcomePanel" class="hero-card">
-        <div class="hero-sigil" aria-hidden="true">◇</div>
-        <span class="eyebrow">THE CHRONICLE AWAITS</span>
-        <h1>Live one life.<br/>Change one world.</h1>
-        <p>A persistent fantasy world where your character acts freely, the simulation decides what changes, and narration speaks only after reality is committed.</p>
-        <div class="hero-actions">
-          <button id="newCampaignBtn" class="primary-button" type="button">BEGIN NEW CAMPAIGN</button>
-          <button id="resumeBtn" class="secondary-button" type="button">OPEN THE ARCHIVE</button>
+        <div class="hero-landscape" aria-hidden="true">
+          <svg viewBox="0 0 1000 440" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <defs><linearGradient id="er-sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#162f37"/><stop offset=".65" stop-color="#536568"/><stop offset="1" stop-color="#a88d68"/></linearGradient></defs>
+            <rect width="1000" height="440" fill="url(#er-sky)"/>
+            <circle cx="722" cy="114" r="58" fill="#e9d7a5" opacity=".9"/>
+            <path d="M0 280 93 162 145 235 236 94 336 247 443 136 557 272 650 154 745 279 843 118 1000 298v142H0Z" fill="#29404a"/>
+            <path d="m0 329 150-107 134 123 170-143 142 126 122-93 112 81 170-83v207H0Z" fill="#1b343c"/>
+            <path d="M0 365q140-60 298-6t310-8q192-66 392-14v103H0Z" fill="#162a31"/>
+            <path d="M0 389q260-51 452-4t548-13v68H0Z" fill="#0c2028"/>
+            <path d="M815 326V235h15v91m-46 0V274h12v52m-32 0v-77h16v77m-23-77 27-24 32 26m-38-30 15-20 23 20m-12-47 17-24 20 24v60m-44 0h80" stroke="#0c2028" stroke-width="10" fill="#0c2028"/>
+            <g fill="#0a1a22"><path d="m48 437 22-130 22 130Zm55 0 36-179 37 179Zm92 0 21-117 22 117Zm653 0 32-141 32 141Zm65 0 32-183 33 183Z"/></g>
+          </svg>
         </div>
-        <div class="foundation-note"><span>STATE</span><i>→</i><span>SIMULATION</span><i>→</i><span>NARRATION</span></div>
+        <span class="eyebrow">A REALM WITHOUT A SCRIPT</span>
+        <h1>Every legend<br/><em>begins somewhere.</em></h1>
+        <p>One character. A world that remembers. Decide what you attempt, and discover what becomes true.</p>
+        <div class="hero-actions">
+          <button id="newCampaignBtn" class="primary-button" type="button">BEGIN A NEW STORY <span aria-hidden="true">↗</span></button>
+          <button id="resumeBtn" class="secondary-button" type="button">CONTINUE A STORY</button>
+        </div>
+        <p class="hero-motto">THE WORLD REMEMBERS WHAT HAPPENS</p>
       </section>
 
       <section id="gamePanel" class="campaign-shell hidden" aria-label="Campaign">
@@ -58,7 +70,20 @@
         </header>
 
         <section id="view-chronicle" class="game-view active" data-view="chronicle">
+          <div class="realm-scene">
+            <div class="scene-art" aria-hidden="true">
+              <svg viewBox="0 0 1000 320" preserveAspectRatio="xMidYMid slice" focusable="false">
+                <rect width="1000" height="320" fill="#203742"/><circle cx="777" cy="89" r="44" fill="#b3b5a0"/>
+                <path d="M0 215 160 80 308 218 472 64 630 230 808 93 1000 212v108H0Z" fill="#385361"/>
+                <path d="M0 255 200 179 360 275 520 163 737 260 900 162 1000 190v130H0Z" fill="#203d48"/>
+                <path d="M0 292q230-54 420-5t580-21v54H0Z" fill="#152d37"/>
+                <g fill="#102530"><path d="m58 320 30-94 30 94Zm60 0 30-130 30 130Zm648 0 24-89 24 89Zm72 0 31-129 31 129Zm78 0 20-100 20 100Z"/></g>
+              </svg>
+            </div>
+            <div class="scene-caption"><span class="scene-eyebrow">THE PRESENT MOMENT</span><h3 id="sceneLocation">Your location</h3><span id="sceneMoment">The world is beginning</span><p id="sceneSummary">Your story will be written here.</p></div>
+          </div>
           <article class="chronicle-card">
+            <header class="chronicle-heading"><span>THE STORY SO FAR</span><small>Recorded events · Your character’s view</small></header>
             <div id="chronicle" class="chronicle" role="log" aria-live="polite" aria-relevant="additions"></div>
 
             <section id="rollPanel" class="roll-panel hidden" aria-label="Latest resolution">
@@ -70,7 +95,7 @@
               <div id="rollDetails" class="roll-details hidden"></div>
             </section>
 
-            <div class="quick-actions" aria-label="Quick actions">
+            <div class="action-shelf-heading"><strong>Possible moves</strong><span>Or write your own action below</span></div><div class="quick-actions" aria-label="Quick actions">
               <button type="button" data-action="I look around carefully."><span>01</span><b>LOOK</b><small>Observe the scene</small></button>
               <button type="button" data-action="I investigate the immediate area for useful evidence or details."><span>02</span><b>INVESTIGATE</b><small>Search existing evidence</small></button>
               <button type="button" data-action="I speak to someone present."><span>03</span><b>TALK</b><small>Address someone here</small></button>
@@ -162,24 +187,24 @@
 
     <form id="actionBar" class="action-bar hidden">
       <label class="sr-only" for="actionInput">Character action</label>
-      <textarea id="actionInput" rows="1" maxlength="3000" placeholder="What does your character attempt?"></textarea>
-      <button id="commitBtn" class="commit-button" type="submit"><span>COMMIT</span><small>ACT</small></button>
+      <textarea id="actionInput" rows="1" maxlength="3000" placeholder="What do you do? Speak, act, explore, decide…"></textarea>
+      <button id="commitBtn" class="commit-button" type="submit"><span>DO IT</span><small>↗</small></button>
     </form>
 
     <nav id="bottomNav" class="bottom-nav hidden" aria-label="Game navigation">
-      <button class="nav-button active" data-view-target="chronicle" type="button"><span>◫</span><small>Chronicle</small></button>
-      <button class="nav-button" data-view-target="character" type="button"><span>♙</span><small>Character</small></button>
-      <button class="nav-button" data-view-target="journal" type="button"><span>≡</span><small>Journal</small></button>
-      <button class="nav-button" data-view-target="realm" type="button"><span>◇</span><small>Realm</small></button>
+      <button class="nav-button active" data-view-target="chronicle" type="button"><span>✦</span><small>Story</small></button>
+      <button class="nav-button" data-view-target="character" type="button"><span>♙</span><small>Hero</small></button>
+      <button class="nav-button" data-view-target="journal" type="button"><span>☷</span><small>Journal</small></button>
+      <button class="nav-button" data-view-target="realm" type="button"><span>⌖</span><small>Realm</small></button>
     </nav>
   </div>
 
   <dialog id="creationDialog" class="modal">
-    <form id="creationForm" method="dialog">
-      <div class="modal-head"><div><span class="eyebrow">SOUL FORGING</span><h2>Create your character</h2></div><button class="icon-button close-dialog" value="cancel" aria-label="Close">×</button></div>
-      <div class="progress-track"><span id="creationProgress"></span></div>
+    <form id="creationForm" novalidate>
+      <div class="modal-head"><div><span class="eyebrow">SOUL FORGING</span><h2>Who will you become?</h2></div><button class="icon-button close-dialog" value="cancel" aria-label="Close">×</button></div>
+      <p class="creation-intro">A life begins as a story. Tell it naturally; the world will keep what you establish.</p><div class="progress-track"><span id="creationProgress"></span></div>
       <p id="creationStepLabel" class="step-label"></p><label id="creationLabel" for="creationInput"></label>
-      <textarea id="creationInput" rows="3" maxlength="1200" autocomplete="off" required></textarea><p id="creationHint" class="muted"></p>
+      <textarea id="creationInput" rows="5" maxlength="1200" autocomplete="off"></textarea><p id="creationHint" class="muted"></p><div id="creationSummary" class="creation-summary hidden" aria-label="Character profile review"></div><div id="creationError" class="creation-error hidden" role="alert" tabindex="-1"></div>
       <div class="dialog-actions"><button id="creationBack" class="secondary-button" type="button">BACK</button><button id="creationNext" class="primary-button" type="submit">NEXT</button></div>
     </form>
   </dialog>

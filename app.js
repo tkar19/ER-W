@@ -63,23 +63,128 @@ function bindEvents(){
 function autoGrow(e){const el=e.target;el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px'}
 function switchView(view){state.activeView=view;$$('.game-view').forEach(v=>v.classList.toggle('active',v.dataset.view===view));$$('.nav-button').forEach(b=>b.classList.toggle('active',b.dataset.viewTarget===view));const labels={chronicle:'THE CHRONICLE',character:'SOUL FORGING',journal:'THE JOURNAL',realm:'REALM & TOOLS'};$('#viewEyebrow').textContent=labels[view]||'ETERNAL REALMS';if(state.campaign)renderCampaign(false,false)}
 
-function beginCreation(){state.creationIndex=0;state.creation={};state.creationReview=null;renderCreation();showDialog($('#creationDialog'))}
-function renderCreation(){const reviewing=state.creationIndex===creationFields.length;if(reviewing){$('#creationProgress').style.width='100%';$('#creationStepLabel').textContent='Pre-commit review';$('#creationLabel').textContent='Review facts, mechanics, and social position';const sections=state.creationReview?.review_sections||{};$('#creationHint').textContent=`PLAYER FACTS: ${JSON.stringify(sections.player_established||{})} · MECHANICS: ${JSON.stringify(sections.derived_mechanics||{})} · SOCIAL/WORLD: ${JSON.stringify(sections.social_world_position||{})}`;const input=$('#creationInput');input.value='Confirmed profile; submit to commit.';input.disabled=true;$('#creationBack').disabled=false;$('#creationNext').textContent='COMMIT GENERATION 0';return}const [key,label,question,hint,stage]=creationFields[state.creationIndex];$('#creationInput').disabled=false;$('#creationProgress').style.width=`${((state.creationIndex+1)/creationFields.length)*100}%`;$('#creationStepLabel').textContent=`${stage?'Focused history':'Identity'} · ${state.creationIndex+1} of ${creationFields.length}`;$('#creationLabel').textContent=question;$('#creationHint').textContent=hint;const input=$('#creationInput');input.value=stage?(state.creation.answers?.find(x=>x.prompt_id===key)?.text||''):(state.creation[key]??'');input.inputMode=key==='age'?'numeric':'text';input.placeholder=label;$('#creationBack').disabled=state.creationIndex===0;$('#creationNext').textContent=state.creationIndex===creationFields.length-1?'REVIEW':'NEXT';setTimeout(()=>input.focus(),50)}
-async function creationNext(e){e.preventDefault();if(state.creationIndex===creationFields.length){$('#creationNext').disabled=true;try{const result=await api('/api/campaigns',{method:'POST',body:JSON.stringify({creation_profile:state.creation,confirmed_review_digest:state.creationReview.review_digest})});$('#creationDialog').close();await refreshCampaigns();await loadCampaign(result.campaign_id);toast('Generation 0 committed from the reviewed profile.')}catch(error){toast(error.message,5000)}finally{$('#creationNext').disabled=false}return}const [key,,, ,stage]=creationFields[state.creationIndex];const value=$('#creationInput').value.trim();if(!value)return toast('This field is required; enter “None” when it does not apply.');if(key==='age'&&(!Number.isFinite(Number(value))||Number(value)<=0))return toast('Enter a valid positive age.');if(stage){state.creation.answers ||= [];state.creation.answers=state.creation.answers.filter(x=>x.prompt_id!==key);state.creation.answers.push({contract_id:'ER_CREATION_ANSWER_V1',answer_id:`answer_${key}`,prompt_id:key,stage,text:value,raw_text:value})}else state.creation[key]=key==='age'?Number(value):value;if(state.creationIndex<creationFields.length-1){state.creationIndex++;renderCreation();return}$('#creationNext').disabled=true;try{state.creationReview=await api('/api/creation/review',{method:'POST',body:JSON.stringify({creation_profile:state.creation})});state.creationIndex=creationFields.length;renderCreation()}catch(error){toast(error.message,5000)}finally{$('#creationNext').disabled=false}}
-function creationBack(){if(state.creationIndex===0)return;if(state.creationIndex===creationFields.length){state.creationIndex--;state.creationReview=null;renderCreation();return}state.creationIndex--;renderCreation()}
+
+const CREATION_DRAFT_KEY='ergpt_creation_draft_v2';
+function storeCreationDraft(){
+  try{localStorage.setItem(CREATION_DRAFT_KEY,JSON.stringify({index:state.creationIndex,creation:state.creation,current:$('#creationInput').value}));}catch{}
+}
+function clearCreationError(){
+  const box=$('#creationError');box.classList.add('hidden');box.textContent='';
+}
+function showCreationError(error){
+  const box=$('#creationError');
+  const reasons=Array.isArray(error?.body?.clarifications)?error.body.clarifications:Array.isArray(error?.body?.missing_fields)?error.body.missing_fields:[];
+  const line=error?.message||String(error||'Could not complete this step.');
+  box.textContent='We could not complete this step. '+(reasons.length?reasons.join('\n'):line)+'. Your answers are still here; go back to edit any detail, then try again.';
+  box.classList.remove('hidden');box.scrollIntoView({block:'nearest',behavior:'auto'});box.focus();
+}
+function rememberCreationAnswer(){
+  if(state.creationIndex>=creationFields.length)return;
+  const [key,,,,stage]=creationFields[state.creationIndex],value=$('#creationInput').value.trim();
+  if(stage){
+    state.creation.answers ||= [];
+    state.creation.answers=state.creation.answers.filter(a=>a.prompt_id!==key);
+    if(value)state.creation.answers.push({contract_id:'ER_CREATION_ANSWER_V1',answer_id:'answer_'+key,prompt_id:key,stage,text:value,raw_text:value});
+  }else state.creation[key]=key==='age'?(value?Number(value):null):value;
+}
+function beginCreation(){
+  let draft=null;try{draft=JSON.parse(localStorage.getItem(CREATION_DRAFT_KEY)||'null')}catch{}
+  const valid=draft&&typeof draft.creation==='object'&&draft.creation&&!Array.isArray(draft.creation)&&Number.isInteger(draft.index)&&draft.index>=0&&draft.index<creationFields.length;
+  state.creationIndex=valid?draft.index:0;state.creation=valid?draft.creation:{};state.creationReview=null;
+  renderCreation();
+  if(valid&&typeof draft.current==='string')$('#creationInput').value=draft.current;
+  $('#creationInput').oninput=storeCreationDraft;
+  showDialog($('#creationDialog'));
+}
+function renderCreationReview(){
+  const review=state.creationReview,sections=review?.review_sections||{},info=sections.player_established||{},person=info.identity||{};
+  const item=(label,value)=>'<div class="review-detail"><span>'+esc(label)+'</span><strong>'+esc(value||'Not provided')+'</strong></div>';
+  const descriptions=(info.answers||[]).map(a=>{
+    const stage=creationFields.find(f=>f[0]===a.prompt_id)?.[1]||a.stage;
+    const warn=a.parse_status==='retained_unparsed';
+    const unresolved=(review?.profile?.facts||[]).some(f=>f.source_answer_id===a.answer_id&&f.confidence==='unresolved');
+    return '<article class="review-entry"><small>'+esc(stage)+'</small><p>'+esc(a.raw_text)+'</p>'+
+    (warn||unresolved?'<em>Kept in your history, without unverified mechanical benefits.</em>':'')+'</article>';
+  }).join('');
+  const mechanics=sections.derived_mechanics||{},skills=Object.entries(mechanics.skills||{}).filter(x=>x[1]>0).slice(0,7).map(x=>x[0]+' '+x[1]);
+  $('#creationSummary').innerHTML=
+    '<h3>The person entering this world</h3><div class="review-grid">'+item('Name',person.name)+item('Age',person.age)+item('Ancestry',person.race)+item('Calling',person.class)+'</div>'+
+    '<h3>Recorded history</h3><div class="review-records">'+(descriptions||'<p class="review-empty">No additional history was entered.</p>')+'</div>'+
+    '<h3>Starting abilities</h3><p>'+esc(skills.join(' · ')||'No evidenced trained skills yet.')+'</p>'+
+    '<p class="review-caution">Your words remain on record. Only facts the rules can establish become mechanical abilities or world events. Local narration is not a generative language model.</p>';
+}
+function renderCreation(){
+  clearCreationError();
+  const reviewing=state.creationIndex===creationFields.length,input=$('#creationInput'),summary=$('#creationSummary');
+  $('#creationProgress').style.width=reviewing?'100%':String(((state.creationIndex+1)/creationFields.length)*100)+'%';
+  input.classList.toggle('hidden',reviewing);input.disabled=reviewing;input.required=!reviewing&&!creationFields[state.creationIndex]?.[4];
+  summary.classList.toggle('hidden',!reviewing);
+  if(reviewing){
+    $('#creationStepLabel').textContent='Final page · Review';
+    $('#creationLabel').textContent='Read your story before the world begins';
+    $('#creationHint').textContent='Everything below can be checked. Go back to change any part. Nothing is committed until you begin.';
+    $('#creationBack').disabled=false;$('#creationNext').textContent='BEGIN MY STORY';
+    renderCreationReview();return;
+  }
+  const [key,label,question,hint,stage]=creationFields[state.creationIndex];
+  $('#creationStepLabel').textContent=(stage?'Your history':'Your identity')+' · '+(state.creationIndex+1)+' / '+creationFields.length;
+  $('#creationLabel').textContent=question;
+  $('#creationHint').textContent=hint+(stage?' Write naturally. Optional; unclear details are preserved without automatic skill bonuses.':'');
+  input.value=stage?(state.creation.answers?.find(a=>a.prompt_id===key)?.text||''):(state.creation[key]??'');
+  input.inputMode=key==='age'?'numeric':'text';
+  input.placeholder=stage?'Tell your story in your own words (optional)':label;
+  $('#creationBack').disabled=state.creationIndex===0;
+  $('#creationNext').textContent=state.creationIndex===creationFields.length-1?'REVIEW MY CHARACTER':'CONTINUE';
+  // Do not force-focus the textarea; that opened the Android keyboard over the form.
+}
+async function creationNext(e){
+  e.preventDefault();clearCreationError();
+  const button=$('#creationNext');
+  if(state.creationIndex===creationFields.length){
+    button.disabled=true;button.textContent='OPENING YOUR WORLD…';
+    try{
+      const result=await api('/api/campaigns',{method:'POST',body:JSON.stringify({creation_profile:state.creation,confirmed_review_digest:state.creationReview.review_digest})});
+      try{localStorage.removeItem(CREATION_DRAFT_KEY)}catch{}
+      $('#creationDialog').close();
+      await refreshCampaigns();await loadCampaign(result.campaign_id);
+      toast('Your character has entered the world.');
+    }catch(error){showCreationError(error)}
+    finally{button.disabled=false;button.textContent='BEGIN MY STORY'}
+    return;
+  }
+  const [key,,,,stage]=creationFields[state.creationIndex],value=$('#creationInput').value.trim();
+  if(!value&&!stage){showCreationError(new Error('Please provide '+creationFields[state.creationIndex][1].toLowerCase()));return}
+  if(key==='age'&&(!Number.isInteger(Number(value))||Number(value)<=0||Number(value)>10000)){
+    showCreationError(new Error('Enter a valid whole-number age'));return;
+  }
+  rememberCreationAnswer();storeCreationDraft();
+  if(state.creationIndex<creationFields.length-1){state.creationIndex++;renderCreation();storeCreationDraft();return}
+  button.disabled=true;button.textContent='REVIEWING…';
+  try{
+    state.creationReview=await api('/api/creation/review',{method:'POST',body:JSON.stringify({creation_profile:state.creation})});
+    state.creationIndex=creationFields.length;renderCreation();
+  }catch(error){showCreationError(error)}
+  finally{button.disabled=false;if(state.creationIndex!==creationFields.length)button.textContent='REVIEW MY CHARACTER'}
+}
+function creationBack(){
+  if(state.creationIndex===0)return;
+  if(state.creationIndex!==creationFields.length)rememberCreationAnswer();
+  state.creationIndex--;state.creationReview=null;renderCreation();storeCreationDraft();
+}
 
 async function refreshCampaigns(){const r=await api('/api/campaigns');state.campaigns=r.campaigns||[]}
 async function openCampaignEntry(entry,automatic=false){state.campaignId=entry.campaign_id;localStorage.setItem('ergpt_external_campaign',entry.campaign_id);if(entry.integrity_status==='invalid'){state.generation=null;state.campaign=null;renderWelcome();await openRecovery(automatic);return}await loadCampaign(entry.campaign_id);if(entry.recovery_action)await openRecovery(automatic)}
 async function loadCampaign(id){const r=await api(`/api/campaigns/${encodeURIComponent(id)}`);state.campaignId=id;state.generation=r.generation;state.campaign=r;state.lastResolution=null;localStorage.setItem('ergpt_external_campaign',id);localStorage.setItem('ergpt_external_last_view',JSON.stringify(r));renderCampaign(false)}
 function renderWelcome(){$('#welcomePanel').classList.remove('hidden');$('#gamePanel').classList.add('hidden');$('#actionBar').classList.add('hidden');$('#bottomNav').classList.add('hidden')}
-function renderCampaign(offline=false,rerenderChronicle=true){const c=state.campaign;if(!c)return renderWelcome();const s=c.state;$('#welcomePanel').classList.add('hidden');$('#gamePanel').classList.remove('hidden');$('#actionBar').classList.remove('hidden');$('#bottomNav').classList.remove('hidden');$('#campaignTitle').textContent=offline?`${s.pc.identity.name} — cached view`:s.pc.identity.starting_goal;$('#pcName').textContent=s.pc.identity.name;$('#locationText').textContent=s.world.location;$('#timeText').textContent=s.world.time_label;$('#campaignTimeText').textContent=s.campaign_clock?.elapsed?.label||'Campaign Day 1';$('#generationText').textContent=`G${c.generation}`;if(rerenderChronicle)renderChronicle(c.presentations||[]);renderCharacter(s);renderJournal(s);renderRealm(s);renderResolution(state.lastResolution);updateConnectivity()}
+function renderCampaign(offline=false,rerenderChronicle=true){const c=state.campaign;if(!c)return renderWelcome();const s=c.state;$('#welcomePanel').classList.add('hidden');$('#gamePanel').classList.remove('hidden');$('#actionBar').classList.remove('hidden');$('#bottomNav').classList.remove('hidden');$('#campaignTitle').textContent=offline?`${s.pc.identity.name} — cached view`:s.pc.identity.starting_goal;$('#pcName').textContent=s.pc.identity.name;$('#locationText').textContent=s.world.location;$('#timeText').textContent=s.world.time_label;$('#campaignTimeText').textContent=s.campaign_clock?.elapsed?.label||'Campaign Day 1';$('#generationText').textContent=`G${c.generation}`;if(rerenderChronicle)renderChronicle(c.presentations||[]);renderCharacter(s);renderJournal(s);renderRealm(s);renderResolution(state.lastResolution);renderWorldScene(s);updateConnectivity()}
+function renderWorldScene(s){$('#sceneLocation').textContent=s.world?.location||'Unknown place';$('#sceneMoment').textContent=s.world?.time_label||'World time unknown';$('#sceneSummary').textContent=s.scene?.summary||'Your surroundings are waiting to be discovered.';}
 function renderChronicle(p){const log=$('#chronicle');if(!p.length){log.innerHTML=`<div class="entry system"><div class="entry-meta">AWAITING A WORLD</div><p>A new campaign waits beyond the veil.</p></div>`;return}log.innerHTML=p.map(x=>`<div class="entry"><div class="entry-meta">G${x.generation} · ${esc(x.source||'engine')}</div><p>${esc(x.text)}</p></div>`).join('');log.scrollTop=log.scrollHeight}
 function renderResolution(r){const panel=$('#rollPanel');if(!r?.check){panel.classList.add('hidden');return}panel.classList.remove('hidden');$('#rollDie').textContent=r.check.natural;$('#rollOutcome').textContent=title(r.outcome);const c=r.check;$('#rollDetails').innerHTML=`<div class="roll-metric"><small>Natural</small><b>${c.natural}</b></div><div class="roll-metric"><small>Total</small><b>${c.total}</b></div><div class="roll-metric"><small>DC</small><b>${c.hidden_dc?'Hidden':c.dc}</b></div><div class="roll-metric"><small>Margin</small><b>${c.margin==null?'—':c.margin}</b></div><div class="roll-metric"><small>${esc(c.attribute||'Attribute')}</small><b>${c.attribute_value??0}</b></div><div class="roll-metric"><small>${esc(c.skill||'Skill')}</small><b>${c.skill_value??0}</b></div><div class="roll-metric"><small>Situation</small><b>${c.situation>=0?'+':''}${c.situation}</b></div><div class="roll-metric"><small>Effect</small><b>${esc(r.plan?.effect||'—')}</b></div><div class="roll-plan">Plan ${esc(r.plan?.plan_digest||'—')}</div>`}
 function renderCharacter(s){const id=s.pc.identity;$('#identitySummary').innerHTML=[id.age,id.race,id.class,id.gender].map(v=>`<span>${esc(v)}</span>`).join('')+`<span>${esc(id.appearance)}</span>`;const h=s.pc.health;$('#vitals').innerHTML=[['Life',h.life_status],['Fatigue',h.fatigue?.label||'fresh'],['Mana',`${s.pc.magic.mana}/${s.pc.magic.max_mana}`],['Injuries',h.injuries?.length||0]].map(([k,v])=>`<div class="vital"><small>${esc(k)}</small><strong>${esc(v)}</strong></div>`).join('');$('#attributeGrid').innerHTML=Object.entries(s.pc.attributes||{}).map(([k,v])=>`<div class="attribute"><b>${esc(v)}</b><small>${esc(k)}</small></div>`).join('');$('#skillsGrid').innerHTML=Object.entries(s.pc.skills||{}).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([k,v])=>`<div class="skill-row"><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('');$('#healthPanel').innerHTML=`<div class="health-stack"><div class="health-row"><span>Life status</span><b>${esc(title(h.life_status))}</b></div><div class="health-row"><span>Fatigue</span><b>${esc(title(h.fatigue?.label||'fresh'))}</b></div>${(h.injuries||[]).map(i=>`<div class="health-row"><span>${esc(title(i.body_location))} · ${esc(title(i.harm_type))}</span><b>${esc(title(i.severity))}</b></div>`).join('')||'<div class="health-row"><span>Injuries</span><b>None</b></div>'}${Object.entries(h.survival||{}).map(([k,v])=>`<div class="health-row"><span>${esc(title(k))}</span><b>${esc(title(v))}</b></div>`).join('')}</div>`;const m=s.pc.magic;$('#magicPanel').innerHTML=`<div class="health-stack"><div class="health-row"><span>Resource model</span><b>${esc(title(m.resource_model))}</b></div><div class="health-row"><span>Mana</span><b>${m.mana}/${m.max_mana}</b></div><div class="health-row"><span>Known operations</span><b>${esc((m.known_operations||[]).join(', ')||'None')}</b></div><div class="health-row"><span>Techniques</span><b>${esc((m.known_techniques||[]).join(', ')||'None')}</b></div></div>`}
 function renderJournal(s){const npcs=s.known_npcs||[];$('#npcJournal').innerHTML=npcs.length?npcs.map(n=>`<div class="journal-row"><div><strong>${esc(n.name)}</strong><small>${esc(n.role||'Unknown role')} · ${esc(n.location||'Unknown location')}</small></div><span class="pill">${esc(n.visible_condition?.life_status||'known')}</span></div>`).join(''):empty('No persistent NPC has entered the player-known record yet.');const ev=s.scene.evidence||[];$('#evidenceJournal').innerHTML=ev.length?ev.map(e=>`<div class="journal-row"><div><strong>${esc(e.description||e.evidence_id)}</strong><small>${esc((e.methods||[]).join(' · '))}</small></div>${e.critical?'<span class="pill">CRITICAL</span>':''}</div>`).join(''):empty('No evidence has been discovered yet.');const th=s.scene.unresolved_threads||[];$('#threadJournal').innerHTML=th.length?th.map(t=>`<div class="journal-row"><div><strong>${esc(t.label||t.id)}</strong><small>${esc(title(t.status||'open'))}</small></div></div>`).join(''):empty('No unresolved threads.');const projects=[];if(s.projects?.travel&&s.projects.travel.status==='active')projects.push(`<div class="journal-row"><div><strong>Travel → ${esc(s.projects.travel.target)}</strong><small>${Number(s.projects.travel.remaining_distance_km).toFixed(2)} km remaining</small></div><span class="pill">ACTIVE</span></div>`);for(const p of Object.values(s.projects?.crafts||{}))projects.push(`<div class="journal-row"><div><strong>${esc(p.output_name)}</strong><small>${esc(p.current_progress)} / ${esc(p.required_progress)} progress</small></div><span class="pill">${esc(title(p.status))}</span></div>`);$('#projectJournal').innerHTML=projects.join('')||empty('No active travel or craft project.');const agreements=s.agreements||[];$('#agreementJournal').innerHTML=agreements.length?agreements.map(a=>`<div class="journal-row"><div><strong>${esc(a.terms)}</strong><small>${esc(a.parties.join(' · '))}</small></div><span class="pill">ACCEPTED</span></div>`).join(''):empty('No mutually accepted agreements.') }
 function renderRealm(s){const wt=s.world.world_time||{};const cc=s.campaign_clock?.elapsed||{};$('#worldCalendarPanel').innerHTML=`<div class="health-row"><span>World date</span><b>${esc(s.world.time_label)}</b></div><div class="health-row"><span>Season</span><b>${esc(wt.season||'Unknown')}</b></div><div class="health-row"><span>Calendar</span><b>${esc(s.world.calendar?.display_name||'World calendar')}</b></div><div class="health-row"><span>Character campaign age</span><b>${esc(cc.label||'Campaign Day 1')}</b></div>`;const inv=Object.values(s.inventory.items||{});$('#loadLabel').textContent=`${Number(s.inventory.carried_load||0).toFixed(2)} / ${esc(s.inventory.load_band?.capacity||'—')} · ${esc(title(s.inventory.load_band?.band||''))}`;$('#inventoryPanel').innerHTML=inv.length?inv.map(i=>`<div class="inventory-row"><div><strong>${esc(i.name)}</strong><small>${esc(i.access||'stowed')} · owner ${esc(i.owner_id||'unclaimed')}</small></div><span class="pill">${esc(i.quantity)} × ${esc(i.load??i.mass??0)}</span></div>`).join(''):empty('Nothing carried.');$('#resourcesPanel').innerHTML=Object.entries(s.resources||{}).map(([k,v])=>`<div class="resource"><small>${esc(k)}</small><strong>${esc(v)}</strong></div>`).join('');$('#backendUrl').value=configuredBase()}
 
-async function commitAction(e){e.preventDefault();if(!state.campaignId||state.generation===null||(!navigator.onLine&&!localAuthority()))return;const input=$('#actionInput'),text=input.value.trim();if(!text)return;const b=$('#commitBtn');b.disabled=true;b.querySelector('span').textContent='WORKING';try{const r=await api(`/api/campaigns/${encodeURIComponent(state.campaignId)}/act`,{method:'POST',body:JSON.stringify({text,expected_generation:state.generation})});state.lastResolution=r.resolution;input.value='';input.style.height='auto';await loadCampaignPreserveResolution(state.campaignId);if(r.dm_fallback_reason)toast('Online DM unavailable; continued safely with the offline Local DM.');else if(r.intent_source==='local_fallback')toast('OpenAI unavailable; local intent interpreter used.')}catch(error){if(error.status===409){toast('Another writer committed first. Reloaded current state.');await loadCampaign(state.campaignId)}else toast(playerActionError(error),5000)}finally{b.disabled=!navigator.onLine&&!localAuthority();b.querySelector('span').textContent='COMMIT'}}
+async function commitAction(e){e.preventDefault();if(!state.campaignId||state.generation===null||(!navigator.onLine&&!localAuthority()))return;const input=$('#actionInput'),text=input.value.trim();if(!text)return;const b=$('#commitBtn');b.disabled=true;b.querySelector('span').textContent='WORKING';try{const r=await api(`/api/campaigns/${encodeURIComponent(state.campaignId)}/act`,{method:'POST',body:JSON.stringify({text,expected_generation:state.generation})});state.lastResolution=r.resolution;input.value='';input.style.height='auto';await loadCampaignPreserveResolution(state.campaignId);if(r.dm_fallback_reason)toast('Online DM unavailable; continued safely with the offline Local DM.');else if(r.intent_source==='local_fallback')toast('OpenAI unavailable; local intent interpreter used.')}catch(error){if(error.status===409){toast('Another writer committed first. Reloaded current state.');await loadCampaign(state.campaignId)}else toast(playerActionError(error),5000)}finally{b.disabled=!navigator.onLine&&!localAuthority();b.querySelector('span').textContent='DO IT'}}
 async function loadCampaignPreserveResolution(id){const saved=state.lastResolution;const r=await api(`/api/campaigns/${encodeURIComponent(id)}`);state.campaignId=id;state.generation=r.generation;state.campaign=r;state.lastResolution=saved;localStorage.setItem('ergpt_external_last_view',JSON.stringify(r));renderCampaign(false)}
 async function openCampaigns(){try{await refreshCampaigns()}catch(e){return toast(e.message)}const list=$('#campaignList');list.innerHTML=state.campaigns.length?state.campaigns.map(c=>`<button class="campaign-row" data-id="${esc(c.campaign_id)}"><strong>${esc(c.name)}</strong><small>${c.integrity_status==='invalid'?'RECOVERY REQUIRED':`${esc(c.location)} · ${esc(c.time_label)} · Campaign Day ${esc(c.campaign_day||1)} · G${c.generation}`}${c.recovery_action==='rebuild_index'?' · INDEX REBUILD AVAILABLE':''}</small></button>`).join(''):empty('No campaigns yet.');$$('#campaignList .campaign-row').forEach(btn=>btn.onclick=async()=>{const entry=state.campaigns.find(c=>c.campaign_id===btn.dataset.id);$('#campaignDialog').close();if(entry)await openCampaignEntry(entry,false)});showDialog($('#campaignDialog'))}
 async function exportCurrent(){if(!state.campaignId)return toast('No campaign loaded.');if(!localAuthority()){window.location.href=apiUrl(`/api/campaigns/${encodeURIComponent(state.campaignId)}/export`);return toast('Preparing portable save.')}try{const bundle=await api(`/api/campaigns/${encodeURIComponent(state.campaignId)}/export`),blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`${state.campaignId}.ergpt.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),0);toast('Portable browser-local save exported.')}catch(error){toast(`Export failed: ${error.message}`,5000)}}
