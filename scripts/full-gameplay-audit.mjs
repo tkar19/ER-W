@@ -89,7 +89,7 @@ try{
   if(report.at(-1).locationBefore!==lastLocation)throw Error('Unknown destination teleported player');
   await page.locator('[data-view-target="character"]').click();
   await page.locator('#view-character').waitFor({state:'visible'});
-  if(!(await page.locator('#vitals').innerText()).includes('Mana'))throw Error('Character panel missing vital information');
+  if(!(await page.locator('#vitals').textContent()).toLowerCase().includes('mana'))throw Error('Character panel missing vital information');
   await page.screenshot({path:'screenshots/audit-character.png',fullPage:true});
   await page.locator('[data-view-target="journal"]').click();
   await page.locator('#view-journal').waitFor({state:'visible'});
