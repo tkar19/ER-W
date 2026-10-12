@@ -1,0 +1,12 @@
+{
+  "name": "eternal-realms-public-web-release",
+  "private": true,
+  "version": "0.6.0-playtest",
+  "type": "module",
+  "scripts": {
+    "verify": "node scripts/verify-release.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

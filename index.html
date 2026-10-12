@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f0e" />
+  <meta name="description" content="Eternal Realms — ERGPT External, a persistent living-world RPG runtime." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Eternal Realms — ERGPT External</title>
+</head>
+<body>
+  <div id="app" class="app-shell" aria-live="polite">
+    <div id="offlineBanner" class="offline-banner hidden" role="status">OFFLINE — browser-local play and canonical commits remain available.</div>
+
+    <header class="topbar">
+      <button id="homeMark" class="sigil-button" type="button" aria-label="Open Chronicle">◇</button>
+      <div class="brand">
+        <span class="eyebrow">THE LIVING WORLD</span>
+        <strong>ETERNAL REALMS</strong>
+        <small>ERGPT External</small>
+      </div>
+      <button id="menuBtn" class="icon-button" type="button" aria-label="Open campaign menu" aria-expanded="false">☰</button>
+    </header>
+
+    <section class="pulse" aria-label="World pulse">
+      <div class="pulse-copy">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        <div><span class="eyebrow">WORLD PULSE</span><strong id="pulseText">Connecting to the realm…</strong></div>
+      </div>
+      <span id="linkBadge" class="status-badge">LOCAL</span>
+    </section>
+
+    <main>
+      <section id="welcomePanel" class="hero-card">
+        <div class="hero-sigil" aria-hidden="true">◇</div>
+        <span class="eyebrow">THE CHRONICLE AWAITS</span>
+        <h1>Live one life.<br/>Change one world.</h1>
+        <p>A persistent fantasy world where your character acts freely, the simulation decides what changes, and narration speaks only after reality is committed.</p>
+        <div class="hero-actions">
+          <button id="newCampaignBtn" class="primary-button" type="button">BEGIN NEW CAMPAIGN</button>
+          <button id="resumeBtn" class="secondary-button" type="button">OPEN THE ARCHIVE</button>
+        </div>
+        <div class="foundation-note"><span>STATE</span><i>→</i><span>SIMULATION</span><i>→</i><span>NARRATION</span></div>
+      </section>
+
+      <section id="gamePanel" class="campaign-shell hidden" aria-label="Campaign">
+        <header class="campaign-head">
+          <div>
+            <span class="eyebrow" id="viewEyebrow">THE CHRONICLE</span>
+            <h2 id="campaignTitle">Awaiting a world</h2>
+          </div>
+          <div class="world-meta" aria-label="Campaign status">
+            <span id="locationText">—</span><span id="timeText">—</span><span id="campaignTimeText">Campaign Day 1</span><span id="generationText">G0</span>
+          </div>
+        </header>
+
+        <section id="view-chronicle" class="game-view active" data-view="chronicle">
+          <article class="chronicle-card">
+            <div id="chronicle" class="chronicle" role="log" aria-live="polite" aria-relevant="additions"></div>
+
+            <section id="rollPanel" class="roll-panel hidden" aria-label="Latest resolution">
+              <button id="rollToggle" class="roll-summary" type="button" aria-expanded="false">
+                <span class="die" id="rollDie">d20</span>
+                <span><small>LATEST RESOLUTION</small><strong id="rollOutcome">—</strong></span>
+                <span class="chevron">⌄</span>
+              </button>
+              <div id="rollDetails" class="roll-details hidden"></div>
+            </section>
+
+            <div class="quick-actions" aria-label="Quick actions">
+              <button type="button" data-action="I look around carefully."><span>01</span><b>LOOK</b><small>Observe the scene</small></button>
+              <button type="button" data-action="I investigate the immediate area for useful evidence or details."><span>02</span><b>INVESTIGATE</b><small>Search existing evidence</small></button>
+              <button type="button" data-action="I speak to someone present."><span>03</span><b>TALK</b><small>Address someone here</small></button>
+              <button type="button" data-action="I travel 5 km south."><span>04</span><b>TRAVEL SOUTH</b><small>5 km route attempt</small></button>
+              <button type="button" data-action="I cast magic cautiously."><span>05</span><b>CAST MAGIC</b><small>Use known magical law</small></button>
+              <button type="button" data-action="I wait four hours."><span>06</span><b>WAIT FOUR HOURS</b><small>Advance fictional time</small></button>
+            </div>
+          </article>
+        </section>
+
+        <section id="view-character" class="game-view" data-view="character" aria-label="Character">
+          <div class="panel-grid">
+            <article class="panel-card hero-stat-card">
+              <span class="eyebrow">SOUL FORGING</span><h2 id="pcName">Character</h2>
+              <div id="identitySummary" class="identity-summary"></div>
+              <div id="vitals" class="vitals"></div>
+            </article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">ATTRIBUTES</span><small>Core capability</small></div><div id="attributeGrid" class="attribute-grid"></div></article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">SKILLS</span><small>Training 0–6+</small></div><div id="skillsGrid" class="skills-grid"></div></article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">HEALTH</span><small>Injury, fatigue & survival</small></div><div id="healthPanel"></div></article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">MAGIC</span><small>Law-bound capability</small></div><div id="magicPanel"></div></article>
+          </div>
+        </section>
+
+        <section id="view-journal" class="game-view" data-view="journal" aria-label="Journal">
+          <div class="panel-grid two-col">
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">KNOWN PEOPLE</span><small>Only what your character may know</small></div><div id="npcJournal" class="journal-list"></div></article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">EVIDENCE</span><small>Discovered, not invented</small></div><div id="evidenceJournal" class="journal-list"></div></article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">OPEN THREADS</span><small>Unresolved matters</small></div><div id="threadJournal" class="journal-list"></div></article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">PROJECTS</span><small>Travel and crafting in progress</small></div><div id="projectJournal" class="journal-list"></div></article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">AGREEMENTS</span><small>Only mutually accepted commitments</small></div><div id="agreementJournal" class="journal-list"></div></article>
+          </div>
+        </section>
+
+        <section id="view-realm" class="game-view" data-view="realm" aria-label="Realm tools">
+          <div class="panel-grid two-col">
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">WORLD CALENDAR</span><small>Absolute in-world time</small></div><div id="worldCalendarPanel" class="health-stack"></div></article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">INVENTORY</span><small id="loadLabel">Carried load</small></div><div id="inventoryPanel" class="journal-list"></div></article>
+            <article class="panel-card"><div class="panel-title"><span class="eyebrow">RESOURCES</span><small>Committed material state</small></div><div id="resourcesPanel" class="resource-grid"></div></article>
+            <article class="panel-card tools-card">
+              <div class="panel-title"><span class="eyebrow">CAMPAIGN TOOLS</span><small>Portable and inspectable</small></div>
+              <div class="tool-grid">
+                <button id="realmArchive" type="button">ARCHIVE <small>Committed record</small></button>
+                <button id="realmExport" type="button">EXPORT <small>Portable save</small></button>
+                <button id="realmValidate" type="button">VALIDATE <small>Hashes & ancestry</small></button>
+                <button id="realmRecover" type="button">RECOVERY <small>Diagnose local canon</small></button>
+                <button id="realmChatGPT" type="button">CHATGPT <small>Player-safe handoff</small></button>
+              </div>
+            </article>
+            <article class="panel-card">
+              <div class="panel-title"><span class="eyebrow">NARRATION</span><small>Shared Local / Online voice</small></div>
+              <label class="setting-label" for="narrationDensity">Narration density <span>Changes optional detail only. Mandatory visible consequences are always narrated.</span></label>
+              <select id="narrationDensity">
+                <option value="adaptive">Adaptive — match visible significance</option>
+                <option value="concise">Concise — minimal routine detail</option>
+                <option value="balanced">Balanced — normal detail</option>
+                <option value="expansive">Expansive — more selected detail</option>
+              </select>
+              <p class="system-note">Both DM modes use the same grounded, player-safe, second-person philosophy. This preference is local UI state and never changes canon.</p>
+              <button id="saveNarrationDensity" class="secondary-button full" type="button">SAVE NARRATION DENSITY</button>
+            </article>
+            <article class="panel-card">
+              <div class="panel-title"><span class="eyebrow">DM CONNECTION</span><small>Optional player-safe Online DM</small></div>
+              <label class="setting-label" for="onlineDmPreference">DM preference <span>Local DM remains available for ordinary offline play and safe fallback.</span></label>
+              <select id="onlineDmPreference">
+                <option value="automatic">Automatic — Online when healthy</option>
+                <option value="online_preferred">Online preferred — show degradation</option>
+                <option value="local_only">Local only — never contact Online DM</option>
+              </select>
+              <div class="setting-toggle"><div><strong>Allow player-safe Online DM</strong><small>Explicit opt-in. Sends current player text, visible scene/status and bounded conversation context. Never sends hidden state, canonical event data, provider credentials or device/account identity.</small></div><input id="onlineDmConsent" type="checkbox" /></div>
+              <p id="onlineDmStatus" class="system-note"></p>
+              <button id="saveOnlineDm" class="secondary-button full" type="button">SAVE DM PREFERENCE</button>
+            </article>
+            <article class="panel-card">
+              <div class="panel-title"><span class="eyebrow">APP & APK</span><small>Web foundation / Android-ready direction</small></div>
+              <label class="setting-label" for="backendUrl">Compatibility runtime URL <span>Leave blank for the normal browser-local offline authority.</span></label>
+              <div class="setting-row"><input id="backendUrl" type="url" inputmode="url" placeholder="https://your-runtime.example" /><button id="saveBackend" type="button">SAVE</button></div>
+              <div class="setting-row"><input id="runtimeToken" type="password" autocomplete="off" placeholder="Runtime access token (session only)" /></div>
+              <div class="setting-row"><input id="debugToken" type="password" autocomplete="off" placeholder="Debug token (optional, session only)" /></div>
+              <div class="setting-toggle"><div><strong>Developer / playtest mode</strong><small>Reveals internal simulation/debug tools. Never used for normal player narration.</small></div><input id="debugToggle" type="checkbox" /></div>
+              <button id="debugInspect" class="secondary-button full hidden" type="button">OPEN INTERNAL DEBUG VIEW</button>
+              <button id="debugHandoff" class="secondary-button full hidden" type="button">COPY DEBUG CHATGPT HANDOFF</button>
+              <p class="system-note">The HTML/CSS/JavaScript/PWA remains the primary codebase. Android packaging is prepared around this same web bundle rather than a replacement native rewrite.</p>
+            </article>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <form id="actionBar" class="action-bar hidden">
+      <label class="sr-only" for="actionInput">Character action</label>
+      <textarea id="actionInput" rows="1" maxlength="3000" placeholder="What does your character attempt?"></textarea>
+      <button id="commitBtn" class="commit-button" type="submit"><span>COMMIT</span><small>ACT</small></button>
+    </form>
+
+    <nav id="bottomNav" class="bottom-nav hidden" aria-label="Game navigation">
+      <button class="nav-button active" data-view-target="chronicle" type="button"><span>◫</span><small>Chronicle</small></button>
+      <button class="nav-button" data-view-target="character" type="button"><span>♙</span><small>Character</small></button>
+      <button class="nav-button" data-view-target="journal" type="button"><span>≡</span><small>Journal</small></button>
+      <button class="nav-button" data-view-target="realm" type="button"><span>◇</span><small>Realm</small></button>
+    </nav>
+  </div>
+
+  <dialog id="creationDialog" class="modal">
+    <form id="creationForm" method="dialog">
+      <div class="modal-head"><div><span class="eyebrow">SOUL FORGING</span><h2>Create your character</h2></div><button class="icon-button close-dialog" value="cancel" aria-label="Close">×</button></div>
+      <div class="progress-track"><span id="creationProgress"></span></div>
+      <p id="creationStepLabel" class="step-label"></p><label id="creationLabel" for="creationInput"></label>
+      <textarea id="creationInput" rows="3" maxlength="1200" autocomplete="off" required></textarea><p id="creationHint" class="muted"></p>
+      <div class="dialog-actions"><button id="creationBack" class="secondary-button" type="button">BACK</button><button id="creationNext" class="primary-button" type="submit">NEXT</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="menuDialog" class="modal menu-modal">
+    <div class="modal-head"><div><span class="eyebrow">CAMPAIGN MENU</span><h2>Realm controls</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div>
+    <div class="menu-stack">
+      <button id="menuNew" class="menu-row" type="button"><span>New campaign</span><small>Start a separate realm</small></button>
+      <button id="menuSwitch" class="menu-row" type="button"><span>Campaigns</span><small>Resume another save</small></button>
+      <button id="menuExport" class="menu-row" type="button"><span>Export save</span><small>Portable ERGPT External JSON</small></button>
+      <label class="menu-row file-row"><span>Import save</span><small>ERGPT External saves only</small><input id="importInput" type="file" accept="application/json,.json" /></label>
+      <button id="menuValidate" class="menu-row" type="button"><span>Validate save</span><small>Verify hashes and ancestry</small></button>
+      <button id="menuRecover" class="menu-row" type="button"><span>Local recovery</span><small>Diagnose damage; never rolls back automatically</small></button>
+      <button id="menuChatGPT" class="menu-row accent" type="button"><span>Open in ChatGPT</span><small>Copy a player-safe state handoff</small></button>
+      <button id="installBtn" class="menu-row hidden" type="button"><span>Install web app</span><small>PWA now; same web foundation can later be packaged into Android</small></button>
+    </div>
+    <p class="boundary-note">This build is <strong>ergpt-external</strong>. It does not write to ERGPT Ordinary Chat, ERGPT Work, ERGP, or the earlier Eternal Realms web build.</p>
+  </dialog>
+
+  <dialog id="campaignDialog" class="modal"><div class="modal-head"><div><span class="eyebrow">THE ARCHIVE</span><h2>Campaigns</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div><div id="campaignList" class="campaign-list"></div></dialog>
+  <dialog id="archiveDialog" class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">THE ARCHIVE</span><h2>Committed record</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div><div id="archiveContent" class="archive-content"></div></dialog>
+  <dialog id="debugDialog" class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">PLAYTEST / DEBUG</span><h2>Internal state</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div><p class="warning-note">Internal truth can contain information the player character does not know. This view is intentionally separate from normal play.</p><div id="debugContent" class="archive-content"></div></dialog>
+  <dialog id="recoveryDialog" class="modal"><div class="modal-head"><div><span class="eyebrow">LOCAL RECOVERY</span><h2>Validate before changing HEAD</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div><p id="recoverySummary" class="warning-note"></p><p class="system-note">Recovery is explicit. The app never silently rolls back canon, substitutes a branch, or treats a derived index as authoritative.</p><div class="dialog-actions"><button class="secondary-button close-dialog" type="button">CANCEL</button><button id="recoveryConfirm" class="primary-button" type="button" disabled>NO RECOVERY REQUIRED</button></div></dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="./runtime-config.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

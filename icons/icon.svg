@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ERGPT External">
+  <rect width="512" height="512" rx="112" fill="#111513"/>
+  <path d="M256 74 423 256 256 438 89 256 256 74Z" fill="none" stroke="#d7b878" stroke-width="22"/>
+  <path d="M256 141 355 256 256 371 157 256 256 141Z" fill="none" stroke="#95c7a8" stroke-width="14"/>
+  <circle cx="256" cy="256" r="31" fill="#d7b878"/>
+</svg>
