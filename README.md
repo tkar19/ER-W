@@ -35,7 +35,7 @@ On Android, open the URL in Chrome, test a new campaign and select **Add to Home
 
 ## Release provenance
 
-- Source: private `tkar19/Eternal-Realms`, main commit `0e30ab801195cbd2df0ebf48157533feee385509`.
+- Source: private `tkar19/Eternal-Realms`, main commit `22751e2a1c3c08f5277c5d7aff8fdb36bd08daef`.
 - Browser-safe application assembled from `game/public/` and the allowlisted `game/src/` modules from that exact commit.
 - This public release is assembled from the current source module allowlist, not the sometimes-stale checked-in `game/www/` directory.
 - No Node server code, API secrets, training datasets, or private project planning documents are published.
@@ -50,3 +50,7 @@ The public workflow also runs a headless Chromium test at a narrow Android-sized
 ## Full gameplay audit
 
 The private source now contains `game/test/full_gameplay_audit.test.mjs` (16 domain-level checks), and this public repository contains an Android-size multi-action Playwright audit. This release fixes first-person LOOK commands and punctuation/case matching for *existing* travel destinations. Audit traces are retained in GitHub Actions artifacts; device testing remains distinct from CI emulation.
+
+### Conversation ledger hotfix
+
+The full-playthrough audit exposed a real IndexedDB ordering defect after consecutive questions. This release sorts stored conversations by canonical sequence and uses absolute sequence numbers when the recent-context window exceeds 50 entries. This is a storage repair; it does not alter canonical world events.

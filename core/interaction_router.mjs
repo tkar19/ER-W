@@ -65,7 +65,7 @@ export function routeInteraction(playerText,binding,{recent_entries=[]}={}){
   } else if(presentActionWording(actionText))mode='world_action';
   else if(/^(?:hello|hi|thanks|thank you|okay|yes|no)[.!\s]*$/i.test(actionText))mode='non_action_statement';
   const ambiguous=mode==='clarification_needed'||mode==='continue_reference'||mode==='repeat_reference';
-  const result={contract_id:CONTRACTS.interaction,interaction_id:`ix_${sha256(`${binding.campaign_id}|${binding.head_hash}|${text}|${recent_entries.length}`).slice(0,24)}`,...binding,player_text:text,interaction_mode:mode,confidence:ambiguous?0:1,ambiguity_flags:ambiguous?['requires_grounding']:[],correction:mode==='correction'?text:null,context_reference:reference,proposed_intent:null,commit_authorised:false,ledger_links:reference?[reference]:[],provenance:{source:reference?'player_text_and_ledger':'player_text'}};
+  const result={contract_id:CONTRACTS.interaction,interaction_id:`ix_${sha256(`${binding.campaign_id}|${binding.head_hash}|${text}|${((recent_entries.at(-1)?.sequence??-1)+1)}`).slice(0,24)}`,...binding,player_text:text,interaction_mode:mode,confidence:ambiguous?0:1,ambiguity_flags:ambiguous?['requires_grounding']:[],correction:mode==='correction'?text:null,context_reference:reference,proposed_intent:null,commit_authorised:false,ledger_links:reference?[reference]:[],provenance:{source:reference?'player_text_and_ledger':'player_text'}};
   validateInteraction(result);return result;
 }
 export function authorizeIntent(envelope,intent){

@@ -261,7 +261,7 @@ export async function finalizeLocalInteraction(campaignId,{phase,presentation,co
   try{
     const phases=tx.objectStore(STORES.interactions),current=await requestResult(phases.get(cleanPhase.interaction_id));
     if(!current||current.campaign_id!==campaignId||current.phase!==cleanPhase.phase)throw new Error('Interaction recovery phase changed.');
-    const conversations=tx.objectStore(STORES.conversation),existing=(await requestResult(conversations.index('campaign_id').getAll(campaignId))).map(clone),cleanConversation=sanitizeConversation(conversation,{index:existing.length,campaignId});
+    const conversations=tx.objectStore(STORES.conversation),existing=(await requestResult(conversations.index('campaign_id').getAll(campaignId))).map(clone).sort((a,b)=>a.sequence-b.sequence),cleanConversation=sanitizeConversation(conversation,{index:existing.length,campaignId});
     validateConversationLedger([...existing,cleanConversation]);await requestResult(tx.objectStore(STORES.presentations).add({campaign_id:campaignId,...cleanPresentation}));await requestResult(conversations.add(cleanConversation));
     await requestResult(phases.delete(cleanPhase.interaction_id));await transactionDone(tx);return clone(cleanConversation);
   }catch(error){try{tx.abort();}catch{}throw error;}finally{db.close();}
@@ -280,7 +280,7 @@ export async function readLocalPresentations(campaignId,max=50,options={}){
 export async function appendLocalConversation(campaignId,entry,options={}){
   validateCampaignId(campaignId);const db=await openLocalDatabase(options);const tx=db.transaction(STORES.conversation,'readwrite');
   try{
-    const store=tx.objectStore(STORES.conversation),existing=(await requestResult(store.index('campaign_id').getAll(campaignId))).map(clone),clean=sanitizeConversation(entry,{index:existing.length,campaignId});
+    const store=tx.objectStore(STORES.conversation),existing=(await requestResult(store.index('campaign_id').getAll(campaignId))).map(clone).sort((a,b)=>a.sequence-b.sequence),clean=sanitizeConversation(entry,{index:existing.length,campaignId});
     validateConversationLedger([...existing,clean]);await requestResult(store.add(clean));await transactionDone(tx);return clone(clean);
   }catch(error){try{tx.abort();}catch{}throw error;}finally{db.close();}
 }
