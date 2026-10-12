@@ -30,12 +30,12 @@ On Android, open the URL in Chrome, test a new campaign and select **Add to Home
 - Use **Export** to make a portable campaign backup before clearing browser data or updating large builds. Re-import via the in-game tools.
 - Keep the site at the same URL; using another hostname/browser means a different save store.
 - Real-device functionality and offline service-worker behavior still require Android playtesting. Do not treat this as a production-ready release.
-- The Local DM is not a trained generative language model. It expresses committed state using bounded narration.
+- The Local DM is not yet a trained generative language model. It now uses the current game's player-safe event presentation contract and a deliberately restrictive grounding fallback. Research models remain private.
 - ChatGPT handoff is manual; it does not continuously sync ChatGPT's answers into game authority.
 
 ## Release provenance
 
-- Source: private `tkar19/Eternal-Realms`, main commit `59e32b2af9de3572095063b505a1e541bf599740` (latest DM language routing update).
+- Source: private `tkar19/Eternal-Realms`, main commit `1d8fc7a37196e8c1e3fc2d874b51ffe8648a86c2` (current grounded Local DM integration).
 - Browser-safe application assembled from `game/public/` and the allowlisted `game/src/` modules from that exact commit.
 - This public release is assembled from the current source module allowlist, not the sometimes-stale checked-in `game/www/` directory.
 - No Node server code, API secrets, training datasets, or private project planning documents are published.

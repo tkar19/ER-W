@@ -4,7 +4,7 @@ import { localIntent } from './intent.mjs';
 import { authorizeIntent, routeInteraction, actionTextForInteraction } from './interaction_router.mjs';
 import { createConversationEntry } from './conversation_ledger.mjs';
 import { createLocalDmAdapter } from './local_dm_adapter.mjs';
-import { invokeLocalAiV09 } from './local_ai_v09_bridge.mjs';
+import { invokeCurrentLocalDm } from './local_dm_current.mjs';
 import { projectPresentationEvent } from './presentation_events.mjs';
 import { buildSimulationAttention } from './simulation_attention.mjs';
 import { normalizeNarrationDensity } from './dm_voice.mjs';
@@ -35,7 +35,7 @@ import {
 } from './local_store.mjs';
 
 const defaultStore=Object.freeze({appendLocalConversation,appendLocalPresentation,clearLocalInteractionPhase,commitLocalGeneration,createLocalCampaign,diagnoseLocalHeadRecovery,exportLocalCampaign,finalizeLocalInteraction,importLocalCampaign,listLocalCampaigns,loadLocalHistoryIndex,loadLocalCurrent,newLocalCampaignId,readLocalConversation,readLocalInteractionPhases,readLocalPresentations,rebuildLocalHistoryIndex,recoverLocalPreviousHead,saveLocalInteractionPhase,validateLocalAncestry});
-const defaultLocalDm=createLocalDmAdapter({invoke:invokeLocalAiV09});
+const defaultLocalDm=createLocalDmAdapter({invoke:invokeCurrentLocalDm});
 const clone=value=>structuredClone(value);
 export const BROWSER_IMPORT_MAX_BYTES=LOCAL_IMPORT_LIMITS.maxFileBytes;
 

@@ -58,7 +58,7 @@ export function routeInteraction(playerText,binding,{recent_entries=[]}={}){
   else if(/^(?:i (?:did|was|had|already)\b|yesterday\b|earlier\b)/i.test(actionText)||/\b(?:yesterday|earlier|last night)\b/i.test(actionText)||/^i\s+\w+ed\b/i.test(actionText))mode='past_report';
   else if(/^(?:i (?:think|believe|suspect|guess)\b|maybe\b)/i.test(actionText))mode='belief_statement';
   else if(/^(?:what if\b|suppose\b|should i\b|could i\b|would (?:it|that|i)\b|can i\b|i might\b|i could\b|(?:i am|i'm) (?:thinking|considering|planning)\b)/i.test(actionText))mode='planning_query';
-  else if(/^(?:what (?:is|are|do i have)|what time is it|how (?:much|many)|where (?:am i|is my)|do i (?:have|know|remember))\b/i.test(actionText))mode='persistent_state_query';
+  else if(/^(?:what (?:is|are|do i have|am i carrying|do i carry)|show (?:my )?inventory|what time is it|how (?:much|many)|where (?:am i|is my)|do i (?:have|know|remember))\b/i.test(actionText))mode='persistent_state_query';
   else if(/^(?:help|settings|about|how do i play)\b/i.test(actionText))mode='meta_query';
   else if(/^(?:what|who|where|why|how|is|are|can|does|do|did)\b/i.test(actionText)||/^(?:please (?:tell me|explain|describe|clarify)|i ask what)\b/i.test(actionText)||actionText.endsWith('?'))mode='world_query';
   else if(REFERENCE.test(actionText)){

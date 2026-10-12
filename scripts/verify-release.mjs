@@ -3,7 +3,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const cwd=process.cwd();
-const required=['index.html','app.js','styles.css','sw.js','manifest.webmanifest','runtime-config.js','core/browser_runtime.mjs','core/engine.mjs','core/local_ai_v09_bridge.mjs','icons/icon-192.png','icons/icon-512.png','.nojekyll'];
+const required=['index.html','app.js','styles.css','sw.js','manifest.webmanifest','runtime-config.js','core/browser_runtime.mjs','core/engine.mjs','core/local_dm_current.mjs','icons/icon-192.png','icons/icon-512.png','.nojekyll'];
 const fail=m=>{console.error('RELEASE CHECK FAILED: '+m);process.exitCode=1;};
 for(const file of required) if(!fs.existsSync(file)) fail('missing '+file);
 if(process.exitCode)process.exit();
@@ -27,7 +27,7 @@ for(const file of scripts){
 }
 const config=fs.readFileSync('runtime-config.js','utf8');
 if(!/apiBase:\s*''/.test(config)||!/onlineDmGateway:\s*''/.test(config)) fail('public build must keep runtime and provider gateways blank');
-for(const name of ['server.mjs','online_dm_server.mjs','core/openai.mjs','core/store.mjs','.env']){
+for(const name of ['server.mjs','online_dm_server.mjs','core/openai.mjs','core/store.mjs','.env','core/local_ai_v09_bridge.mjs','core/local_ai_v09_baseline/local_cognition.mjs','core/local_ai_v09_baseline/local_reasoner.mjs','core/local_ai_v09_baseline/local_narrator.mjs']){
   if(fs.existsSync(name)) fail('server/private file unexpectedly shipped: '+name);
 }
 const manifest=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8'));
