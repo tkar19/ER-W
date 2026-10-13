@@ -142,7 +142,7 @@
                 <button id="realmExport" type="button">EXPORT <small>Portable save</small></button>
                 <button id="realmValidate" type="button">VALIDATE <small>Hashes & ancestry</small></button>
                 <button id="realmRecover" type="button">RECOVERY <small>Diagnose local canon</small></button>
-                <button id="realmChatGPT" type="button">CHATGPT <small>Player-safe handoff</small></button>
+                <button id="realmChatGPT" type="button">CHATGPT <small>No-key player-safe handoff</small></button>
               </div>
             </article>
             <article class="panel-card">
@@ -218,13 +218,24 @@
       <label class="menu-row file-row"><span>Import save</span><small>ERGPT External saves only</small><input id="importInput" type="file" accept="application/json,.json" /></label>
       <button id="menuValidate" class="menu-row" type="button"><span>Validate save</span><small>Verify hashes and ancestry</small></button>
       <button id="menuRecover" class="menu-row" type="button"><span>Local recovery</span><small>Diagnose damage; never rolls back automatically</small></button>
-      <button id="menuChatGPT" class="menu-row accent" type="button"><span>Open in ChatGPT</span><small>Copy a player-safe state handoff</small></button>
+      <button id="menuChatGPT" class="menu-row accent" type="button"><span>Open in ChatGPT</span><small>Copy context and return guest reply</small></button>
       <button id="installBtn" class="menu-row hidden" type="button"><span>Install web app</span><small>PWA now; same web foundation can later be packaged into Android</small></button>
     </div>
     <p class="boundary-note">This build is <strong>ergpt-external</strong>. It does not write to ERGPT Ordinary Chat, ERGPT Work, ERGP, or the earlier Eternal Realms web build.</p>
   </dialog>
 
   <dialog id="campaignDialog" class="modal"><div class="modal-head"><div><span class="eyebrow">THE ARCHIVE</span><h2>Campaigns</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div><div id="campaignList" class="campaign-list"></div></dialog>
+  <dialog id="chatgptDialog" class="modal wide-modal">
+    <div class="modal-head"><div><span class="eyebrow">EXTERNAL GUEST</span><h2>CHATGPT HANDOFF</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div>
+    <p id="chatgptBridgeStatus" class="system-note"></p>
+    <label class="setting-label" for="chatgptHandoffText">Player-safe context for ChatGPT <span>Only share this with the ChatGPT conversation you choose.</span></label>
+    <textarea id="chatgptHandoffText" rows="6" readonly aria-label="ChatGPT handoff context"></textarea>
+    <div class="dialog-actions"><button id="chatgptCopy" class="secondary-button" type="button">COPY HANDOFF</button><a id="chatgptOpen" class="secondary-button" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">OPEN CHATGPT ↗</a></div>
+    <label class="setting-label" for="chatgptReplyText">Paste ChatGPT's response <span>A guest comment only. The engine still resolves every actual action.</span></label>
+    <textarea id="chatgptReplyText" rows="4" maxlength="8000" placeholder="Paste the reply from your ChatGPT conversation here…"></textarea>
+    <div class="dialog-actions"><button id="chatgptUseReply" class="primary-button" type="button">SHOW NON-CANONICAL REPLY</button></div>
+    <p class="boundary-note">This is a manual connection to your ChatGPT account, not automatic ChatGPT plan authentication or API billing. The resident DM works independently, including offline.</p>
+  </dialog>
   <dialog id="archiveDialog" class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">THE ARCHIVE</span><h2>Committed record</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div><div id="archiveContent" class="archive-content"></div></dialog>
   <dialog id="debugDialog" class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">PLAYTEST / DEBUG</span><h2>Internal state</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div><p class="warning-note">Internal truth can contain information the player character does not know. This view is intentionally separate from normal play.</p><div id="debugContent" class="archive-content"></div></dialog>
   <dialog id="recoveryDialog" class="modal"><div class="modal-head"><div><span class="eyebrow">LOCAL RECOVERY</span><h2>Validate before changing HEAD</h2></div><button class="icon-button close-dialog" aria-label="Close">×</button></div><p id="recoverySummary" class="warning-note"></p><p class="system-note">Recovery is explicit. The app never silently rolls back canon, substitutes a branch, or treats a derived index as authoritative.</p><div class="dialog-actions"><button class="secondary-button close-dialog" type="button">CANCEL</button><button id="recoveryConfirm" class="primary-button" type="button" disabled>NO RECOVERY REQUIRED</button></div></dialog>
