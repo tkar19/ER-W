@@ -14,9 +14,9 @@ This repository publishes only the **browser-safe release** of Eternal Realms fr
 - Landscape scene, manuscript chronicle, compact touch action choices and mobile navigation.
 - Free-form player history retained even when exact mechanics cannot be inferred.
 - An installable Progressive Web App (PWA) on supported Android browsers.
-- Manual **ChatGPT handoff**, which copies a player-safe snapshot and opens ChatGPT.
+- Manual **ChatGPT guest bridge**: copy player-safe committed context to the normal ChatGPT site/app, then paste a reply back as an explicitly non-canonical guest comment. Returned text never commits world changes.
 
-**Automatic ChatGPT narration is not enabled.** The OpenAI API requires separate billing; no paid provider credentials or gateway are embedded or connected in this public build. This release defaults to browser-local authority and the Local DM.
+**Automatic ChatGPT account authentication is not enabled.** The older API-key gateway has separate billing and is not connected. The October 2026 Sign in with ChatGPT eligible-plan integration is a possible future locally hosted/native route, but requires secure on-device OAuth callbacks and token storage; the static web PWA does not claim to implement it. This release defaults to browser-local authority and the Local DM.
 
 ## Enable free GitHub Pages (one-time setup)
 
@@ -31,11 +31,11 @@ On Android, open the URL in Chrome, test a new campaign and select **Add to Home
 - Keep the site at the same URL; using another hostname/browser means a different save store.
 - Real-device functionality and offline service-worker behavior still require Android playtesting. Do not treat this as a production-ready release.
 - The Local DM is not yet a trained generative language model. It now uses the current game's player-safe event presentation contract and a deliberately restrictive grounding fallback. Research models remain private.
-- ChatGPT handoff is manual; it does not continuously sync ChatGPT's answers into game authority.
+- ChatGPT handoff and guest-reply return are manual. Replies remain non-canonical and are only displayed when their campaign and generation match the handoff. No continuous ChatGPT account connection is claimed.
 
 ## Release provenance
 
-- Source: private `tkar19/Eternal-Realms`, main commit `1d8fc7a37196e8c1e3fc2d874b51ffe8648a86c2` (current grounded Local DM integration).
+- Baseline: verified grounded Local DM release from private source. The ChatGPT UI and helper delta is copied verbatim from private `tkar19/Eternal-Realms` commit `f5b30e1401223023d46d0fc6330f71fd28337b97`; no resident AI or canonical engine module was changed in this public release.
 - Browser-safe application assembled from `game/public/` and the allowlisted `game/src/` modules from that exact commit.
 - This public release is assembled from the current source module allowlist, not the sometimes-stale checked-in `game/www/` directory.
 - No Node server code, API secrets, training datasets, or private project planning documents are published.
